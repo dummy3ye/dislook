@@ -1,0 +1,33 @@
+{
+    "name": "dislook",
+    "version": "1.0.0",
+    "description": "Inspect discord id's snowflakes from the terminal",
+    "type": "module",
+    "bin": {
+        "dislook": "dist/dislook.js"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "engines": {
+        "node": ">=18"
+    },
+    "keywords": [
+        "discord",
+        "snowflake",
+        "cli",
+        "id"
+    ],
+    "license": "MIT",
+    "scripts": {
+        "build": "tsup dislook.ts --format esm --clean --out-dir dist",
+        "prepublishOnly": "npm run build"
+    },
+    "devDependencies": {
+        "tsup": "^8",
+        "typescript": "^5",
+        "@types/node": "^20"
+    }
+}
