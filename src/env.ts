@@ -10,12 +10,13 @@ export function parseEnv(text: string): Record<string, string> {
     if (!line || line.startsWith("#")) continue;
     const eq = line.indexOf("=");
     if (eq < 1) continue;
-    const key = line.slice(0, eq).replace(/^export\s+/, "").trim().toLowerCase();
+    const key = line
+      .slice(0, eq)
+      .replace(/^export\s+/, "")
+      .trim()
+      .toLowerCase();
     let val = line.slice(eq + 1).trim();
-    if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
-    ) {
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       val = val.slice(1, -1);
     } else {
       val = val.replace(/\s+#.*$/, ""); // trailing comment
@@ -40,8 +41,7 @@ export function loadEnv(): Record<string, string> {
 }
 
 export function getToken(env: Record<string, string>): string | null {
-  const t =
-    env.token ?? env.discord_token ?? env.bot_token ?? process.env.DISCORD_TOKEN ?? "";
+  const t = env.token ?? env.discord_token ?? env.bot_token ?? process.env.DISCORD_TOKEN ?? "";
   const clean = t.replace(/^bot\s+/i, "").trim();
   return clean || null;
 }

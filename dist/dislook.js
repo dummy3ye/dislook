@@ -255,9 +255,7 @@ function showDecoded(d) {
     row("discord tag", c.dim(`<t:${unixSec}:F>`));
     row(
       "calendar",
-      c.dim(
-        `day ${dayOfYear(d.date)} of ${d.date.getUTCFullYear()}, ISO week ${isoWeek(d.date)}`
-      )
+      c.dim(`day ${dayOfYear(d.date)} of ${d.date.getUTCFullYear()}, ISO week ${isoWeek(d.date)}`)
     );
     row("since epoch", c.dim(`day ${d.timestampBits / 86400000n} of Discord`));
   }
@@ -289,7 +287,10 @@ function showUser(u, member) {
   const kind = u.bot ? "user (bot)" : u.system ? "user (system)" : "user";
   console.log();
   row("type", c.blue(kind));
-  row("username", c.bold(u.username) + (u.discriminator && u.discriminator !== "0" ? c.dim(`#${u.discriminator}`) : ""));
+  row(
+    "username",
+    c.bold(u.username) + (u.discriminator && u.discriminator !== "0" ? c.dim(`#${u.discriminator}`) : "")
+  );
   if (u.global_name) row("display name", u.global_name);
   const avatar = u.avatar ? imageUrl("avatars", u.id, u.avatar) : `${CDN}/embed/avatars/${defaultAvatarIndex(u)}.png`;
   row("avatar", c.dim(avatar) + (u.avatar ? "" : c.dim("  (default)")));
@@ -353,7 +354,10 @@ function showGuild(g) {
       `${g.approximate_member_count}${g.approximate_presence_count != null ? c.dim(`  (${g.approximate_presence_count} online)`) : ""}`
     );
   }
-  row("boosts", `tier ${g.premium_tier ?? 0}${c.dim(`  (${g.premium_subscription_count ?? 0} boosts)`)}`);
+  row(
+    "boosts",
+    `tier ${g.premium_tier ?? 0}${c.dim(`  (${g.premium_subscription_count ?? 0} boosts)`)}`
+  );
   if (g.vanity_url_code) row("vanity url", c.dim(`discord.gg/${g.vanity_url_code}`));
   if (g.features?.length) row("features", c.dim(g.features.join(", ")));
 }
@@ -459,7 +463,8 @@ async function main() {
     else if (a === "-j" || a === "--json") {
       ctx.json = true;
       useColor = false;
-    } else if (a === "-g" || a === "--guild") ctx.guild = (args[++i] ?? "").replace(/\D/g, "") || null;
+    } else if (a === "-g" || a === "--guild")
+      ctx.guild = (args[++i] ?? "").replace(/\D/g, "") || null;
     else if (a.startsWith("--guild=")) ctx.guild = a.slice(8).replace(/\D/g, "") || null;
     else inputs.push(a);
   }

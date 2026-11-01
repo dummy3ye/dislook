@@ -1,6 +1,16 @@
 # dislook
 
-
+[![CI](https://img.shields.io/github/actions/workflow/status/dummy3ye/dislook/ci.yml?label=CI&style=flat-square)](https://github.com/dummy3ye/dislook/actions/workflows/ci.yml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/dummy3ye/dislook/codeql.yml?label=CodeQL&style=flat-square)](https://github.com/dummy3ye/dislook/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/dummy3ye/dislook/release.yml?label=Release&style=flat-square)](https://github.com/dummy3ye/dislook/actions/workflows/release.yml)
+[![npm version](https://img.shields.io/npm/v/dislook?style=flat-square)](https://www.npmjs.com/package/dislook)
+[![node](https://img.shields.io/node/v/dislook?style=flat-square)](package.json)
+[![license](https://img.shields.io/npm/l/dislook?style=flat-square)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white&style=flat-square)](https://www.typescriptlang.org)
+[![tested with vitest](https://img.shields.io/badge/tested%20with-vitest-6e9f18?logo=vitest&logoColor=white&style=flat-square)](https://vitest.dev)
+[![code style: prettier](https://img.shields.io/badge/code%20style-prettier-ff69b4?logo=prettier&logoColor=white&style=flat-square)](https://prettier.io)
+[![last commit](https://img.shields.io/github/last-commit/dummy3ye/dislook?style=flat-square)](https://github.com/dummy3ye/dislook/commits)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/dummy3ye/dislook/pulls)
 <!--[![stars](https://img.shields.io/github/stars/dummy3ye/dislook?style=flat)](https://github.com/dummy3ye/dislook/stargazers)-->
 <!--[![issues](https://img.shields.io/github/issues/dummy3ye/dislook)](https://github.com/dummy3ye/dislook/issues)-->
 <!--[![install size](https://packagephobia.com/badge?p=dislook)](https://packagephobia.com/result?p=dislook)-->
@@ -8,10 +18,13 @@
 Inspect any Discord id, dm, channel from your terminal.
 
 Paste a user, channel, server, or message ID (or a whole Discord link) and see everything that can be known about it:
+
 - when it was created
 - how old it is
 - what's inside the snowflake
+
 ### with a bot token:
+
 - the name
 - avatar
 - badges
@@ -41,12 +54,12 @@ dislook <id|url> [more ids...]
 dislook                          # interactive mode
 ```
 
-| Option | What it does |
-| --- | --- |
+| Option               | What it does                                                  |
+| -------------------- | ------------------------------------------------------------- |
 | `-g`, `--guild <id>` | Add server member info (nickname, roles, join date) for users |
-| `-o`, `--offline` | Skip the Discord API and only decode the ID |
-| `-j`, `--json` | Print JSON instead of formatted text |
-| `-h`, `--help` | Show help |
+| `-o`, `--offline`    | Skip the Discord API and only decode the ID                   |
+| `-j`, `--json`       | Print JSON instead of formatted text                          |
+| `-h`, `--help`       | Show help                                                     |
 
 Pass a bare ID, or anything that contains one. A pasted link like `https://discord.com/channels/@me/1238848324803494032` works too, and the ID is extracted for you.
 
@@ -66,15 +79,15 @@ You get the gap between each consecutive pair and the total span, which is handy
 
 ### Offline, always
 
-| Field | Meaning |
-| --- | --- |
-| created | Exact creation time in UTC, plus your local time |
-| age | How long ago that was |
-| unix / discord tag | Unix timestamp and a ready-to-paste `<t:...:F>` tag |
-| calendar | Day of the year and ISO week |
-| worker / process / increment | The internal parts of the snowflake |
-| binary / hex | The raw value, with the four sections color-coded |
-| mention | The `<@id>`, `<#id>`, and `<@&id>` formats |
+| Field                        | Meaning                                             |
+| ---------------------------- | --------------------------------------------------- |
+| created                      | Exact creation time in UTC, plus your local time    |
+| age                          | How long ago that was                               |
+| unix / discord tag           | Unix timestamp and a ready-to-paste `<t:...:F>` tag |
+| calendar                     | Day of the year and ISO week                        |
+| worker / process / increment | The internal parts of the snowflake                 |
+| binary / hex                 | The raw value, with the four sections color-coded   |
+| mention                      | The `<@id>`, `<#id>`, and `<@&id>` formats          |
 
 IDs with a zero, future, or implausibly early timestamp get a warning, since they are probably not real snowflakes.
 
@@ -101,28 +114,28 @@ Online lookups need a Discord bot token. It's free and takes a couple of minutes
    cp .env.example .env
    ```
 
-  and the inside that file
+and the inside that file
 
-   ```env
-   token=YOUR_BOT_TOKEN
-   guild=OPTIONAL_DEFAULT_GUILD_ID
-   ```
+```env
+token=YOUR_BOT_TOKEN
+guild=OPTIONAL_DEFAULT_GUILD_ID
+```
 
 ### Or another method is
 
-  **An environment variable:**
+**An environment variable:**
 
-  ### bash | zsh
+### bash | zsh
 
-   ```bash
-   export token=YOUR_BOT_TOKEN
-   ```
+```bash
+export token=YOUR_BOT_TOKEN
+```
+
 ### Fish
 
-   ```fish
-   set -gx token "YOUR_BOT_TOKEN"
-   ```
-  
+```fish
+set -gx token "YOUR_BOT_TOKEN"
+```
 
 `guild` is optional. It sets the default server used for member info, so you don't need `-g` every time.
 
@@ -161,13 +174,13 @@ node dist/dislook.js <id>
 
 Useful scripts:
 
-| Script | What it does |
-| --- | --- |
-| `npm test` | Run the unit tests once ([vitest](https://vitest.dev)) |
-| `npm run test:watch` | Re-run tests on every change |
-| `npm run check` | Typecheck, lint, and check formatting |
-| `npm run format` | Format everything with Prettier |
-| `npm run build` | Bundle `src/` into `dist/dislook.js` |
+| Script               | What it does                                           |
+| -------------------- | ------------------------------------------------------ |
+| `npm test`           | Run the unit tests once ([vitest](https://vitest.dev)) |
+| `npm run test:watch` | Re-run tests on every change                           |
+| `npm run check`      | Typecheck, lint, and check formatting                  |
+| `npm run format`     | Format everything with Prettier                        |
+| `npm run build`      | Bundle `src/` into `dist/dislook.js`                   |
 
 ### Project layout
 

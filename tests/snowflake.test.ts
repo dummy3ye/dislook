@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  DISCORD_EPOCH,
-  MAX_U64,
-  dayOfYear,
-  decode,
-  extractIds,
-  isoWeek,
-} from "../src/snowflake";
+import { DISCORD_EPOCH, MAX_U64, dayOfYear, decode, extractIds, isoWeek } from "../src/snowflake";
 
 // Builds a snowflake from its parts, the same way Discord does.
 function makeSnowflake(ms: number, worker: bigint, proc: bigint, increment: bigint): bigint {
