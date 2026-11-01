@@ -1,28 +1,21 @@
 #!/usr/bin/env node
-// dislook: inspect any Discord ID (snowflake).
+
+// dislook: inspect any Discord ID snowflake.
 //
-// Offline (always works):
+// offline :
 //   creation time, age, unix/discord timestamps, worker/process/increment,
-//   binary + hex, day of year, ISO week, compare gaps between several IDs.
+//   binary + hex, day of year, ISO week, compare gaps between several ids.
 //
-// Online (needs a bot token in .env):
+// Online :
 //   user    -> username, display name, avatar, banner, badges, bot flag, ...
 //   channel -> name, type, guild, topic, recipients, ...      (only if the bot can see it)
 //   guild   -> name, owner, member counts, boosts, ...        (only if the bot is in it)
 //   --guild -> server nickname, roles, join date for a user in that server
 //
-// .env (in the project root, i.e. where you run this from, or next to this file):
+// .env ( i.e. where you run this from, or next to this file):
 //   token=YOUR_BOT_TOKEN
 //   guild=OPTIONAL_DEFAULT_GUILD_ID
 //
-// Usage:
-//   npx tsx dislook.ts <id|url> [more ids...]
-//   npx tsx dislook.ts                        interactive mode
-//   npx tsx dislook.ts <id> -g <guildId>      add server member info
-//   npx tsx dislook.ts <id> -o                offline only, skip API
-//   npx tsx dislook.ts <id> -j                JSON output
-//
-// Needs Node 18+ (global fetch). No dependencies.
 
 import * as readline from "node:readline";
 
