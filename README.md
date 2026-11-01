@@ -1,12 +1,21 @@
 # dislook
 
-Inspect any Discord ID from your terminal.
 
-Paste a user, channel, server, or message ID (or a whole Discord link) and see everything that can be known about it: when it was created, how old it is, what's inside the snowflake, and, with a bot token, the name, avatar, badges, and more behind it.
+<!--[![stars](https://img.shields.io/github/stars/dummy3ye/dislook?style=flat)](https://github.com/dummy3ye/dislook/stargazers)-->
+<!--[![issues](https://img.shields.io/github/issues/dummy3ye/dislook)](https://github.com/dummy3ye/dislook/issues)-->
+<!--[![install size](https://packagephobia.com/badge?p=dislook)](https://packagephobia.com/result?p=dislook)-->
 
-[![npm version](https://img.shields.io/npm/v/dislook.svg)](https://www.npmjs.com/package/dislook)
-[![license](https://img.shields.io/npm/l/dislook.svg)](LICENSE)
-[![node](https://img.shields.io/node/v/dislook.svg)](package.json)
+Inspect any Discord id, dm, channel from your terminal.
+
+Paste a user, channel, server, or message ID (or a whole Discord link) and see everything that can be known about it:
+- when it was created
+- how old it is
+- what's inside the snowflake
+### with a bot token:
+- the name
+- avatar
+- badges
+- and more behind it.
 
 ## Install
 
@@ -86,18 +95,34 @@ Online lookups need a Discord bot token. It's free and takes a couple of minutes
 2. Go to the **Bot** tab and copy the token.
 3. Give dislook the token in one of two ways:
 
-   **A `.env` file** in the folder you run dislook from:
+   ** copy the `.enx.example` into `.env` file** in the folder you run dislook from:
 
+   ```bash
+   cp .env.example .env
    ```
+
+  and the inside that file
+
+   ```env
    token=YOUR_BOT_TOKEN
    guild=OPTIONAL_DEFAULT_GUILD_ID
    ```
 
-   **An environment variable:**
+### Or another method is
+
+  **An environment variable:**
+
+  ### bash | zsh
 
    ```bash
-   export DISCORD_TOKEN=YOUR_BOT_TOKEN
+   export token=YOUR_BOT_TOKEN
    ```
+### Fish
+
+   ```fish
+   set -gx token "YOUR_BOT_TOKEN"
+   ```
+  
 
 `guild` is optional. It sets the default server used for member info, so you don't need `-g` every time.
 
@@ -124,34 +149,39 @@ Prints one object for a single ID, or an array for several. Colors are turned of
 
 Colors are also disabled when output is piped or when the `NO_COLOR` environment variable is set.
 
-## How snowflakes work
-
-Every Discord ID is a 64-bit number split into four parts:
-
-```
-| timestamp (42 bits) | worker (5) | process (5) | increment (12) |
-```
-
-The timestamp is the number of milliseconds since January 1, 2015, the Discord epoch. That means the creation time can be read straight out of any ID:
-
-```js
-const ms = Number((id >> 22n) + 1420070400000n);
-new Date(ms);
-```
-
-The increment is a counter that goes up for every ID a process generates and wraps around at 4095. Together with the worker and process bits, it keeps IDs unique without any central coordination.
-
-IDs are not derived from each other. A DM channel ID is not computed from the two user IDs. Discord simply stores which users belong to which channel in its database.
-
 ## Development
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/dummy3ye/dislook
 cd dislook
 npm install
 npm run build
 node dist/dislook.js <id>
 ```
+
+Useful scripts:
+
+| Script | What it does |
+| --- | --- |
+| `npm test` | Run the unit tests once ([vitest](https://vitest.dev)) |
+| `npm run test:watch` | Re-run tests on every change |
+| `npm run check` | Typecheck, lint, and check formatting |
+| `npm run format` | Format everything with Prettier |
+| `npm run build` | Bundle `src/` into `dist/dislook.js` |
+
+### Project layout
+
+```
+src/
+  dislook.ts    CLI entry: arguments, printing, API requests
+  snowflake.ts  decode, calendar helpers, ID extraction
+  format.ts     durations and relative times
+  env.ts        .env parsing and token lookup
+  discord.ts    badges, channel types, CDN URLs
+tests/          unit tests for the modules above
+```
+
+The pure logic lives in the small modules so it can be tested without touching the network or the terminal.
 
 ## License
 

@@ -1,0 +1,18 @@
+## What is Snowflake ? and how it works ?
+
+Every Discord ID is a 64-bit number split into four parts:
+
+```
+| timestamp (42 bits) | worker (5) | process (5) | increment (12) |
+```
+
+The timestamp is the number of milliseconds since January 1, 2015, the Discord epoch. That means the creation time can be read straight out of any ID:
+
+```js
+const ms = Number((id >> 22n) + 1420070400000n);
+new Date(ms);
+```
+
+The increment is a counter that goes up for every ID a process generates and wraps around at 4095. Together with the worker and process bits, it keeps IDs unique without any central coordination.
+
+IDs are not derived from each other. A DM channel ID is not computed from the two user IDs. Discord simply stores which users belong to which channel in its database.

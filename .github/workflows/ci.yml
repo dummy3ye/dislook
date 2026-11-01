@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      # Lint, format and typecheck once is enough, so only on the newest Node.
+      - name: Typecheck, lint, format
+        if: matrix.node == 22
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Shebang is correct
+        run: head -n 1 dist/dislook.js | grep -qx '#!/usr/bin/env node'
+
+      - name: Smoke test (offline decode)
+        run: node dist/dislook.js 1206662099582066695 --offline
+
+      - name: Smoke test (JSON output)
+        run: node dist/dislook.js 1206662099582066695 -o -j | grep -q '"created": "2024-02'
+
+      - name: Package contents
+        run: npm pack --dry-run

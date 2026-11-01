@@ -1,0 +1,129 @@
+name: Release
+
+# Push a version tag and everything happens:
+#
+#   npm version patch          # bumps package.json, commits, creates the v1.0.1 tag
+#   git push --follow-tags
+#
+# Flow: verify -> publish to npm + publish to GitHub Packages -> GitHub release.
+# Tags with a dash (v1.1.0-beta.1) are published under the "next" dist-tag
+# and marked as pre-releases instead of becoming "latest".
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tag matches package.json version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION="$(jq -r .version package.json)"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "Tag ($TAG) does not match package.json version ($VERSION)"
+            exit 1
+          fi
+
+      - name: Typecheck, lint, format
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Shebang is correct
+        run: head -n 1 dist/dislook.js | grep -qx '#!/usr/bin/env node'
+
+      - name: Smoke test
+        run: node dist/dislook.js 1206662099582066695 --offline
+
+  publish-npm:
+    name: Publish to npm
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Publish
+        run: |
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then DIST_TAG=next; else DIST_TAG=latest; fi
+          npm publish --provenance --access public --ignore-scripts --tag "$DIST_TAG"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-github:
+    name: Publish to GitHub Packages
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      # GitHub Packages only accepts scoped names that match the owner,
+      # so the package is published as @owner/repo (e.g. @dummy3ye/dislook).
+      - name: Scope the package name
+        run: |
+          NAME="@${GITHUB_REPOSITORY_OWNER,,}/${{ github.event.repository.name }}"
+          jq --arg name "$NAME" '.name = $name' package.json > package.tmp.json
+          mv package.tmp.json package.json
+          echo "Publishing as $NAME"
+
+      - name: Publish
+        run: |
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then DIST_TAG=next; else DIST_TAG=latest; fi
+          npm publish --ignore-scripts --tag "$DIST_TAG"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  github-release:
+    name: GitHub release
+    needs: [publish-npm, publish-github]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create release with generated notes
+        run: |
+          FLAGS=""
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then FLAGS="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag $FLAGS
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
