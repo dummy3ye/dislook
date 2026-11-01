@@ -8,21 +8,24 @@ function makeSnowflake(ms: number, worker: bigint, proc: bigint, increment: bigi
   return (ts << 22n) | (worker << 17n) | (proc << 12n) | increment;
 }
 
+// A generated snowflake for tests that need a second ID.
+const OTHER = makeSnowflake(Date.UTC(2023, 5, 15, 12, 0, 0), 3n, 7n, 144n);
+
 describe("decode", () => {
   it("decodes a real user ID", () => {
-    const d = decode(1206662099582066695n);
-    expect(d.date.toISOString()).toBe("2024-02-12T18:04:23.238Z");
-    expect(d.unixMs).toBe(1707761063238);
-    expect(d.worker).toBe(2n);
-    expect(d.proc).toBe(2n);
-    expect(d.increment).toBe(7n);
-  });
-
-  it("decodes a real DM channel ID", () => {
-    const d = decode(1238848324803494032n);
-    expect(d.date.toISOString()).toBe("2024-05-11T13:40:57.322Z");
+    const d = decode(208265082977648640n);
+    expect(d.date.toISOString()).toBe("2016-07-28T16:51:05.160Z");
+    expect(d.unixMs).toBe(1469724665160);
     expect(d.worker).toBe(0n);
     expect(d.proc).toBe(0n);
+    expect(d.increment).toBe(0n);
+  });
+
+  it("decodes a generated ID", () => {
+    const d = decode(OTHER);
+    expect(d.date.toISOString()).toBe("2023-06-15T12:00:00.000Z");
+    expect(d.worker).toBe(3n);
+    expect(d.proc).toBe(7n);
     expect(d.increment).toBe(144n);
   });
 
@@ -65,7 +68,7 @@ describe("decode", () => {
   it("produces a 64-character binary string", () => {
     expect(decode(1n).binary).toHaveLength(64);
     expect(decode(MAX_U64).binary).toBe("1".repeat(64));
-    expect(decode(1206662099582066695n).binary).toHaveLength(64);
+    expect(decode(208265082977648640n).binary).toHaveLength(64);
   });
 
   it("splits the binary into 42 + 5 + 5 + 12 bits", () => {
@@ -80,7 +83,7 @@ describe("decode", () => {
 describe("dayOfYear", () => {
   it("counts from 1", () => {
     expect(dayOfYear(new Date("2024-01-01T00:00:00Z"))).toBe(1);
-    expect(dayOfYear(new Date("2024-02-12T18:04:23Z"))).toBe(43);
+    expect(dayOfYear(new Date("2024-02-20T12:00:00Z"))).toBe(51);
   });
 
   it("handles leap years", () => {
@@ -93,7 +96,7 @@ describe("dayOfYear", () => {
 describe("isoWeek", () => {
   it("matches known ISO weeks", () => {
     expect(isoWeek(new Date("2024-01-01T00:00:00Z"))).toBe(1);
-    expect(isoWeek(new Date("2024-02-12T18:04:23Z"))).toBe(7);
+    expect(isoWeek(new Date("2024-02-20T12:00:00Z"))).toBe(8);
   });
 
   it("handles year boundaries", () => {
@@ -108,22 +111,20 @@ describe("isoWeek", () => {
 
 describe("extractIds", () => {
   it("finds a bare ID", () => {
-    expect(extractIds("1206662099582066695")).toEqual([1206662099582066695n]);
+    expect(extractIds("208265082977648640")).toEqual([208265082977648640n]);
   });
 
   it("finds the ID inside a Discord URL", () => {
-    expect(extractIds("https://discord.com/channels/@me/1238848324803494032")).toEqual([
-      1238848324803494032n,
-    ]);
+    expect(extractIds(`https://discord.com/channels/@me/${OTHER}`)).toEqual([OTHER]);
   });
 
   it("finds every ID in a server channel link", () => {
-    const url = "https://discord.com/channels/1206662099582066695/1238848324803494032";
-    expect(extractIds(url)).toEqual([1206662099582066695n, 1238848324803494032n]);
+    const url = `https://discord.com/channels/208265082977648640/${OTHER}`;
+    expect(extractIds(url)).toEqual([208265082977648640n, OTHER]);
   });
 
   it("finds several IDs separated by spaces or commas", () => {
-    expect(extractIds("1206662099582066695, 1238848324803494032")).toHaveLength(2);
+    expect(extractIds(`208265082977648640, ${OTHER}`)).toHaveLength(2);
   });
 
   it("ignores numbers that are too short to be snowflakes", () => {

@@ -48,7 +48,7 @@ jobs:
         run: head -n 1 dist/dislook.js | grep -qx '#!/usr/bin/env node'
 
       - name: Smoke test
-        run: node dist/dislook.js 1206662099582066695 --offline
+        run: node dist/dislook.js 208265082977648640 --offline
 
   publish-npm:
     name: Publish to npm

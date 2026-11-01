@@ -56,19 +56,20 @@ describe("imageUrl", () => {
 
 describe("defaultAvatarIndex", () => {
   it("uses the ID for accounts without a discriminator", () => {
-    expect(defaultAvatarIndex({ id: "1238848324803494032", discriminator: "0" })).toBe(4);
-    expect(defaultAvatarIndex({ id: "1238848324803494032" })).toBe(4);
+    expect(defaultAvatarIndex({ id: "208265082977648640", discriminator: "0" })).toBe(0);
+    expect(defaultAvatarIndex({ id: String(7n << 22n) })).toBe(1);
+    expect(defaultAvatarIndex({ id: String(11n << 22n) })).toBe(5);
   });
 
   it("uses the discriminator for legacy accounts", () => {
-    expect(defaultAvatarIndex({ id: "1238848324803494032", discriminator: "1234" })).toBe(4);
-    expect(defaultAvatarIndex({ id: "1238848324803494032", discriminator: "0001" })).toBe(1);
-    expect(defaultAvatarIndex({ id: "1238848324803494032", discriminator: "0005" })).toBe(0);
+    expect(defaultAvatarIndex({ id: "208265082977648640", discriminator: "1234" })).toBe(4);
+    expect(defaultAvatarIndex({ id: "208265082977648640", discriminator: "0001" })).toBe(1);
+    expect(defaultAvatarIndex({ id: "208265082977648640", discriminator: "0005" })).toBe(0);
   });
 
   it("always returns an index from 0 to 5", () => {
     for (let i = 0n; i < 50n; i++) {
-      const idx = defaultAvatarIndex({ id: String(1206662099582066695n + (i << 22n)) });
+      const idx = defaultAvatarIndex({ id: String(208265082977648640n + (i << 22n)) });
       expect(idx).toBeGreaterThanOrEqual(0);
       expect(idx).toBeLessThanOrEqual(5);
     }

@@ -1,0 +1,107 @@
+# Online lookups
+
+With a bot token, dislook asks the Discord API what an ID belongs to. Without one, it only decodes the snowflake.
+
+## Resolution order
+
+An ID is tried as three different things, in order, and the first success wins:
+
+1. **User** — `GET /users/{id}`
+2. **Channel** — `GET /channels/{id}`
+3. **Server** — `GET /guilds/{id}?with_counts=true`
+
+If all three miss, dislook says so and leaves it at the offline decode:
+
+```
+  api  not a user, and no visible channel or server
+       (could be a message, role, or something the bot can't see)
+```
+
+When `-g` or `guild` is set, a successful user lookup also fetches membership:
+
+```
+GET /guilds/{guild}/members/{id}
+```
+
+All requests go to `https://discord.com/api/v10` with `Authorization: Bot <token>` and a 10 second timeout.
+
+## What each kind shows
+
+### User
+
+| Field        | Notes                                                    |
+| ------------ | -------------------------------------------------------- |
+| type         | user, user (bot), or user (system)                       |
+| username     | Includes `#discriminator` for legacy accounts            |
+| display name | The global display name, when set                        |
+| avatar       | CDN link, or the default avatar for accounts without one |
+| banner       | CDN link, when the account has a banner                  |
+| accent color | Hex value, when set                                      |
+| decoration   | Avatar decoration asset, when set                        |
+| server tag   | Primary guild or clan tag, when set                      |
+| badges       | Decoded from `public_flags`, e.g. Early Supporter        |
+| flags        | The raw flag value                                       |
+
+### Server member (with `-g`)
+
+| Field          | Notes                                     |
+| -------------- | ----------------------------------------- |
+| nickname       | Server-specific display name              |
+| joined         | Join date plus a relative age             |
+| boosting since | When the member started boosting          |
+| timeout until  | Communication timeout, when active        |
+| roles          | Count plus the role IDs                   |
+| server avatar  | Server-specific avatar hash, when present |
+
+### Channel
+
+| Field        | Notes                                               |
+| ------------ | --------------------------------------------------- |
+| type         | Named channel type, e.g. text channel, DM, forum    |
+| name         | Channel name, when it has one                       |
+| guild id     | Parent server, with a jump link                     |
+| parent id    | Category or parent channel                          |
+| topic        | Channel topic                                       |
+| nsfw         | Whether the channel is age-restricted               |
+| owner id     | Owner of a group DM                                 |
+| recipients   | Display names of DM participants                    |
+| last message | Decoded from `last_message_id`, with a relative age |
+
+### Server
+
+| Field       | Notes                                       |
+| ----------- | ------------------------------------------- |
+| name        | Server name                                 |
+| description | Server description, when set                |
+| owner id    | Server owner                                |
+| members     | Approximate member count, plus online count |
+| boosts      | Premium tier and boost count                |
+| vanity url  | `discord.gg/...` code, when set             |
+| features    | Feature flags such as `COMMUNITY`           |
+
+## What the API cannot see
+
+- **User lookups work for any ID**, even with no shared server. Only public account data comes back: no email, bio, presence, or connected accounts.
+- **Nicknames and roles are per server**, so they need `-g` and a bot that is in that server.
+- **Channels and servers are only visible to a bot that is in them.** Other people's DMs, including your own with friends, show up as not visible.
+- **Messages and roles cannot be resolved from an ID alone.** Discord needs the channel or server context, so those IDs only get the offline decode.
+- **Worker and process IDs are usually zero** on modern IDs.
+
+## Errors
+
+| Condition       | Output                                                    |
+| --------------- | --------------------------------------------------------- |
+| `401`           | `token was rejected by Discord (401), check your .env`    |
+| `429`           | `rate limited, retry in Ns` when `retry_after` is present |
+| `5xx`           | `Discord API error (N)`                                   |
+| Network/timeout | `request failed: ...`                                     |
+
+Errors are printed next to the decoded ID and do not stop the remaining IDs from being processed.
+
+## Rate limits
+
+A handful of lookups is fine. Bulk scraping will get you throttled and goes against Discord's developer terms. When a lookup is rate limited, dislook reports the wait and moves on.
+
+## Privacy note
+
+The token is only sent to `discord.com`. dislook has no telemetry, no analytics, and no third-party requests.

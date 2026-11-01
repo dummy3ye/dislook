@@ -35,14 +35,14 @@ Paste a user, channel, server, or message ID (or a whole Discord link) and see e
 Run it without installing:
 
 ```bash
-npx dislook 1206662099582066695
+npx dislook 208265082977648640
 ```
 
 Or install it globally:
 
 ```bash
 npm i -g dislook
-dislook 1206662099582066695
+dislook 208265082977648640
 ```
 
 Requires Node.js 18 or newer. There are no runtime dependencies.
@@ -61,7 +61,7 @@ dislook                          # interactive mode
 | `-j`, `--json`       | Print JSON instead of formatted text                          |
 | `-h`, `--help`       | Show help                                                     |
 
-Pass a bare ID, or anything that contains one. A pasted link like `https://discord.com/channels/@me/1238848324803494032` works too, and the ID is extracted for you.
+Pass a bare ID, or anything that contains one. A pasted link like `https://discord.com/channels/@me/208265082977648640` works too, and the ID is extracted for you.
 
 Run `dislook` with no arguments to enter interactive mode, then paste IDs one after another. An empty line quits.
 
@@ -155,7 +155,7 @@ Without a token, dislook runs offline and tells you so.
 ## JSON output
 
 ```bash
-dislook 1206662099582066695 --json
+dislook 208265082977648640 --json
 ```
 
 Prints one object for a single ID, or an array for several. Colors are turned off automatically in this mode.

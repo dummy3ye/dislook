@@ -62,7 +62,7 @@ describe("relative", () => {
 
 describe("short", () => {
   it("keeps the last six digits", () => {
-    expect(short(1206662099582066695n)).toBe("…066695");
+    expect(short(208265082977648640n)).toBe("…648640");
   });
 });
 
