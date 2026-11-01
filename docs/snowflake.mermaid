@@ -1,0 +1,63 @@
+%% Discord snowflake: how an ID is minted (live) and how dislook takes it apart.
+
+flowchart TB
+
+  subgraph LIVE["1. LIVE: how Discord mints an ID"]
+    EVT["Something is created<br/>account, DM, message, server"] --> SVC["Discord backend service<br/>running on one worker, one process"]
+
+    CLK["System clock<br/>Unix time in ms"] --> SUB["minus the Discord epoch<br/>1420070400000 = 2015-01-01 UTC"]
+    SUB --> TSB["timestamp<br/>42 bits"]
+
+    SVC --> WRK["worker id<br/>5 bits"]
+    SVC --> PRC["process id<br/>5 bits"]
+    SVC --> CNT["process counter<br/>goes up by 1 per ID, wraps after 4095"]
+    CNT --> INC["increment<br/>12 bits"]
+
+    TSB --> PACK["Pack with bit shifts and OR<br/>timestamp shifted left 22<br/>worker shifted left 17<br/>process shifted left 12<br/>increment in the low 12 bits"]
+    WRK --> PACK
+    PRC --> PACK
+    INC --> PACK
+
+    PACK --> ID["64-bit snowflake<br/>example: 208265082977648640"]
+    ID --> DB[("Saved on the record<br/>a DM row lists its two users")]
+
+    LAYOUT["Bit layout, high bit to low bit<br/>timestamp 42 | worker 5 | process 5 | increment 12"]
+    UNIQ["No central coordinator needed<br/>a different worker, process or counter value<br/>always gives a different ID"]
+    NOLINK["IDs are not derived from each other<br/>a DM channel ID is not computed<br/>from the two user IDs"]
+    ID -.- LAYOUT
+    ID -.- UNIQ
+    DB -.- NOLINK
+  end
+
+  subgraph REV["2. REVERSE: how dislook takes it apart"]
+    IN["Input<br/>bare ID, Discord URL, or several IDs"] --> EXT["extractIds<br/>find runs of 15 to 20 digits<br/>keep only values up to 2^64 - 1"]
+    EXT --> BIG["BigInt id<br/>exact 64-bit math, no float rounding"]
+
+    BIG --> T1["id shifted right 22<br/>drops worker, process, increment<br/>= ms since 2015<br/>example: 49654265160"]
+    T1 --> T2["plus 1420070400000<br/>= Unix ms<br/>example: 1469724665160"]
+    T2 --> DATE["created date and age<br/>2016-07-28T16:51:05.160Z<br/>unix time, Discord timestamp tag,<br/>day of year, ISO week"]
+
+    BIG --> M1["id AND 0x3E0000, then shifted right 17<br/>= worker id"]
+    BIG --> M2["id AND 0x1F000, then shifted right 12<br/>= process id"]
+    BIG --> M3["id AND 0xFFF<br/>= increment"]
+
+    BIG --> BIN["binary, 64 chars<br/>sliced 42 / 5 / 5 / 12<br/>plus hex"]
+    BIG --> AV["default avatar number<br/>(id shifted right 22) mod 6"]
+
+    DATE & M1 & M2 & M3 & BIN & AV --> OUT["Printed report"]
+  end
+
+  subgraph EXTRA["3. Extras in dislook"]
+    CMP["Compare mode<br/>subtract the Unix ms of two IDs<br/>= how much earlier or later"]
+    TOK["Optional bot token from .env<br/>ask Discord who the ID is"]
+    TOK --> API["Try users, then channels, then guilds<br/>first one that answers wins"]
+    API --> FL["public_flags bitfield<br/>per known bit: (flags shifted right bit) AND 1<br/>= badge on or off"]
+    API --> INFO["name, avatar and banner links,<br/>channel or server details"]
+  end
+
+  ID -->|copy it from a URL or with Developer Mode| IN
+  DATE -.->|two or more IDs| CMP
+  BIG -.->|only if a token exists| TOK
+
+  style ID stroke-width:3px
+  style OUT stroke-width:3px
