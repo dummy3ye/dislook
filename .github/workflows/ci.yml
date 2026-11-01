@@ -35,6 +35,11 @@ jobs:
         if: matrix.node == 22
         run: npm run check
 
+      # vitest needs Node 20+, Node 18 is still covered by the smoke tests below.
+      - name: Unit tests
+        if: matrix.node != 18
+        run: npm test
+
       - name: Build
         run: npm run build
 
@@ -45,7 +50,8 @@ jobs:
         run: node dist/dislook.js 1206662099582066695 --offline
 
       - name: Smoke test (JSON output)
-        run: node dist/dislook.js 1206662099582066695 -o -j | grep -q '"created": "2024-02'
+        run: |
+          node dist/dislook.js 1206662099582066695 -o -j | grep -q '"created": "2024-02'
 
       - name: Package contents
         run: npm pack --dry-run
